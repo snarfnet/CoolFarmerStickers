@@ -3,7 +3,7 @@ import jwt, time, requests, sys, os
 KEY_ID = 'WDXGY9WX55'
 ISSUER = '2be0734f-943a-4d61-9dc9-5d9045c46fec'
 # ASCでアプリ作成後にAPP_IDを入れる（または環境変数APP_IDで上書き）
-APP_ID = os.environ.get('APP_ID', 'REPLACE_WITH_APP_ID')
+APP_ID = os.environ.get('APP_ID', '6780851919')
 BUILD_NUMBER = sys.argv[1]
 
 if APP_ID == 'REPLACE_WITH_APP_ID':
