@@ -33,3 +33,11 @@ targets:
         CFBundleVersion: "1"
         LSApplicationCategoryType: public.app-category.stickers
         LSRequiresIPhoneOS: true
+
+schemes:
+  CoolFarmerStickers:
+    build:
+      targets:
+        CoolFarmerStickers: all
+    archive:
+      config: Release
