@@ -1,0 +1,35 @@
+name: CoolFarmerStickers
+options:
+  bundleIdPrefix: com.amasaki
+  deploymentTarget:
+    iOS: "13.0"
+
+settings:
+  base:
+    TARGETED_DEVICE_FAMILY: "1,2"
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    PRODUCT_BUNDLE_IDENTIFIER: com.amasaki.coolfarmerstickers
+    DEVELOPMENT_TEAM: 83VGKGSQUH
+    CODE_SIGN_STYLE: Automatic
+    ASSETCATALOG_COMPILER_APPICON_NAME: "iMessage App Icon"
+
+targets:
+  CoolFarmerStickers:
+    # Sticker Pack App（コード無し・スタンプのみ）= Messagesアプリ製品タイプ
+    type: com.apple.product-type.application.messages
+    platform: iOS
+    sources: [App]
+    settings:
+      base:
+        INFOPLIST_FILE: App/Info.plist
+        PRODUCT_NAME: CoolFarmerStickers
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleName: クール農家スタンプ
+        CFBundleDisplayName: クール農家スタンプ
+        CFBundleShortVersionString: "1.0"
+        CFBundleVersion: "1"
+        LSApplicationCategoryType: public.app-category.stickers
+        LSRequiresIPhoneOS: true
