@@ -64,6 +64,26 @@ jobs:
         echo "$ASC_API_KEY_CONTENT" | base64 -D > ~/.appstoreconnect/private_keys/AuthKey_WDXGY9WX55.p8
         cp ~/.appstoreconnect/private_keys/AuthKey_WDXGY9WX55.p8 /tmp/asc_key.p8
 
+    - name: Install PyJWT
+      run: pip3 install --break-system-packages PyJWT requests
+
+    - name: Install App Store Provisioning Profile
+      run: |
+        mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+        python3 - <<'PY'
+        import jwt, time, requests, base64, os
+        p8 = open('/tmp/asc_key.p8').read()
+        t = jwt.encode({'iss':'2be0734f-943a-4d61-9dc9-5d9045c46fec','iat':int(time.time()),'exp':int(time.time())+1200,'aud':'appstoreconnect-v1'}, p8, algorithm='ES256', headers={'kid':'WDXGY9WX55'})
+        r = requests.get('https://api.appstoreconnect.apple.com/v1/profiles/MNWG485MAK',
+                         headers={'Authorization': f'Bearer {t}'})
+        a = r.json()['data']['attributes']
+        content = base64.b64decode(a['profileContent'])
+        uuid = a['uuid']
+        path = os.path.expanduser(f'~/Library/MobileDevice/Provisioning Profiles/{uuid}.mobileprovision')
+        open(path, 'wb').write(content)
+        print('Installed profile', a['name'], uuid)
+        PY
+
     - name: Build Archive
       run: |
         xcodebuild archive \
@@ -71,26 +91,17 @@ jobs:
           -configuration Release \
           -destination "generic/platform=iOS" \
           -archivePath build/CoolFarmerStickers.xcarchive \
-          CODE_SIGN_STYLE=Automatic \
+          CODE_SIGN_STYLE=Manual \
           DEVELOPMENT_TEAM=83VGKGSQUH \
-          -allowProvisioningUpdates \
-          -authenticationKeyPath ~/.appstoreconnect/private_keys/AuthKey_WDXGY9WX55.p8 \
-          -authenticationKeyID WDXGY9WX55 \
-          -authenticationKeyIssuerID 2be0734f-943a-4d61-9dc9-5d9045c46fec
+          CODE_SIGN_IDENTITY="Apple Distribution" \
+          PROVISIONING_PROFILE_SPECIFIER="CoolFarmerStickers AppStore"
 
     - name: Export IPA
       run: |
         xcodebuild -exportArchive \
           -archivePath build/CoolFarmerStickers.xcarchive \
           -exportPath build/export \
-          -exportOptionsPlist export_options.plist \
-          -allowProvisioningUpdates \
-          -authenticationKeyPath ~/.appstoreconnect/private_keys/AuthKey_WDXGY9WX55.p8 \
-          -authenticationKeyID WDXGY9WX55 \
-          -authenticationKeyIssuerID 2be0734f-943a-4d61-9dc9-5d9045c46fec
-
-    - name: Install PyJWT
-      run: pip3 install --break-system-packages PyJWT requests
+          -exportOptionsPlist export_options.plist
 
     - name: Submit for Review
       run: python3 scripts/submit.py ${{ env.BUILD_NUM }}
