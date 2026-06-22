@@ -12,6 +12,10 @@ settings:
     PRODUCT_BUNDLE_IDENTIFIER: com.amasaki.coolfarmerstickers
     DEVELOPMENT_TEAM: 83VGKGSQUH
     CODE_SIGN_STYLE: Automatic
+    # actool に iMessage App Icon を AppIcon として認識させる。
+    # これが無いと Assets.car は出来ても Info.plist に XSAppIconAssets 参照が
+    # 書かれず、Apple 側が「asset catalog 欠落(ITMS-90546)」と判定して却下する。
+    ASSETCATALOG_COMPILER_APPICON_NAME: "iMessage App Icon"
 
 targets:
   CoolFarmerStickers:
