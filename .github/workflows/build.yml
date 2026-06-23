@@ -37,9 +37,11 @@ jobs:
 
     - name: Patch Info.plist build number
       run: |
-        sed -i "" "/<key>CFBundleVersion<\/key>/{n;s|<string>[^<]*</string>|<string>$BUILD_NUM</string>|;}" App/Info.plist
-        echo "Info.plist after patch:"
-        grep -A1 CFBundleVersion App/Info.plist
+        for PLIST in App/Info.plist App/Extension-Info.plist; do
+          sed -i "" "/<key>CFBundleVersion<\/key>/{n;s|<string>[^<]*</string>|<string>$BUILD_NUM</string>|;}" "$PLIST"
+          echo "$PLIST after patch:"
+          grep -A1 CFBundleVersion "$PLIST"
+        done
 
     - name: Import Distribution Certificate
       env:

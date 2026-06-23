@@ -9,39 +9,69 @@ settings:
     TARGETED_DEVICE_FAMILY: "1,2"
     MARKETING_VERSION: "1.0"
     CURRENT_PROJECT_VERSION: "1"
-    PRODUCT_BUNDLE_IDENTIFIER: com.amasaki.coolfarmerstickers
     DEVELOPMENT_TEAM: 83VGKGSQUH
     CODE_SIGN_STYLE: Automatic
-    # actool に iMessage App Icon を AppIcon として認識させる。
-    # これが無いと Assets.car は出来ても Info.plist に XSAppIconAssets 参照が
-    # 書かれず、Apple 側が「asset catalog 欠落(ITMS-90546)」と判定して却下する。
+    # actool に iMessage App Icon を AppIcon として認識させる（両ターゲット共通）。
+    # これが無いと ITMS-90546（asset catalog 欠落）で却下される。
     ASSETCATALOG_COMPILER_APPICON_NAME: "iMessage App Icon"
 
 targets:
+  # ホストアプリ（Messages製品タイプ・コード無し）。Stickerは Extension 経由で配信されるため
+  # 単一ターゲットでは Apple が処理中に黙って破棄する。必ず Extension を内包する2ターゲット構成にする。
   CoolFarmerStickers:
-    # Sticker Pack App（コード無し・スタンプのみ）= Messagesアプリ製品タイプ
-    type: com.apple.product-type.application.messages
+    type: application.messages
     platform: iOS
-    sources: [App]
+    sources:
+      - App/Stickers.xcstickers
+    dependencies:
+      - target: CoolFarmerStickersExtension
     settings:
       base:
-        INFOPLIST_FILE: App/Info.plist
+        PRODUCT_BUNDLE_IDENTIFIER: com.amasaki.coolfarmerstickers
         PRODUCT_NAME: CoolFarmerStickers
+        LD_RUNPATH_SEARCH_PATHS: ""
     info:
       path: App/Info.plist
       properties:
         CFBundleName: クール農家スタンプ
         CFBundleDisplayName: クール農家スタンプ
-        CFBundleShortVersionString: "1.0"
-        CFBundleVersion: "1"
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         CFBundlePackageType: APPL
         LSApplicationCategoryType: public.app-category.stickers
         LSRequiresIPhoneOS: true
+
+  # Sticker Pack Extension（Stickers.xcstickers を内包し PlugIns/*.appex として配信される本体）
+  CoolFarmerStickersExtension:
+    type: app-extension.messages-sticker-pack
+    platform: iOS
+    sources:
+      - App/Stickers.xcstickers
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.amasaki.coolfarmerstickers.StickerPackExtension
+        PRODUCT_NAME: CoolFarmerStickersExtension
+        LD_RUNPATH_SEARCH_PATHS: ""
+    info:
+      path: App/Extension-Info.plist
+      properties:
+        CFBundleDisplayName: クール農家スタンプ
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        CFBundlePackageType: "$(PRODUCT_BUNDLE_PACKAGE_TYPE)"
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.message-payload-provider
+          NSExtensionPrincipalClass: StickerBrowserViewController
 
 schemes:
   CoolFarmerStickers:
     build:
       targets:
+        CoolFarmerStickersExtension: all
         CoolFarmerStickers: all
+      parallelizeBuild: true
+      buildImplicitDependencies: true
     archive:
       config: Release
+    run:
+      launchAutomaticallySubstyle: 2
